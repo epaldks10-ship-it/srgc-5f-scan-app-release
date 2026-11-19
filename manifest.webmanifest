@@ -1,0 +1,16 @@
+{
+  "name": "새로고침 적재",
+  "short_name": "새로고침 적재",
+  "description": "바코드를 찍으면 상품명·옵션·로케이션을 보여 줍니다",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F6F4",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
