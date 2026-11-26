@@ -1,0 +1,324 @@
+/* 재고실사 탭 — 앱 AuditScreen.kt 와 같은 네이비·블루 체계 (5F 웹 재고실사 현황판과 같은 색) */
+:root{
+  --a-navy:#244A78; --a-navy-soft:#EEF2F8; --a-blue:#3575C5; --a-blue-soft:#EDF3FB; --a-bg:#F4F6F9;
+  --a-text:#202B3C; --a-sub:#718096; --a-line:#E2E8F0; --a-field:#CBD5E1;
+  --a-ok:#26A269; --a-ok-soft:#EBF6EF; --a-short:#DC5353; --a-short-soft:#FCEEEE;
+  --a-stock:#7B4FC4; --a-over:#E87932; --a-over-soft:#FDF1E9; --a-amber:#E89535; --a-idle:#5F6B7C; --a-idle-soft:#F2F4F7; --a-red:#C94242;
+}
+body.audit{background:var(--a-bg)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* 머리 — 앱과 같은 '작업 선택' 메뉴 (상자 아이콘 ▾) · 지금 작업 칩 · 작업자 이름 */
+header .bar{gap:4px}
+header .title{font-size:21px;font-weight:700;margin-left:2px;white-space:nowrap}
+.mode-chip{margin-left:6px;background:var(--green-soft);color:var(--green);border-radius:8px;padding:2px 8px;font-size:15px;font-weight:700;white-space:nowrap}
+.menu-wrap{position:relative;margin-left:-10px}
+.menu-btn{display:flex;align-items:center;border:0;background:none;padding:8px 4px 8px 8px;border-radius:24px}
+.menu-btn:active{background:var(--green-soft)}
+.menu{position:absolute;left:0;top:calc(100% + 2px);z-index:30;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px 0 4px;min-width:280px}
+.menu-t{font-size:12px;font-weight:700;color:var(--sub);padding:6px 18px}
+.menu-i{display:flex;align-items:center;gap:12px;width:calc(100% - 16px);margin:3px 8px;padding:10px;border:0;border-radius:12px;background:none;text-align:left;color:var(--ink)}
+.menu-i .tile{flex:none;width:40px;height:40px;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center}
+.menu-i .txt{flex:1;display:flex;flex-direction:column}
+.menu-i .txt b{font-size:17px}
+.menu-i .txt small{font-size:12px;color:var(--sub)}
+.menu-i .chk{display:none;flex:none}
+.menu-i.on{background:var(--green-soft)}
+.menu-i.on .tile{background:var(--green);color:#fff}
+.menu-i.on .txt b{color:var(--green)}
+.menu-i.on .chk{display:block}
+header .who{margin-left:auto;border:0;background:none;border-radius:8px;padding:8px 6px;font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;max-width:40vw;overflow:hidden;text-overflow:ellipsis}
+header .who[hidden]{display:none}
+
+#auditTab{gap:10px;color:var(--a-text)}
+.a-card{background:#fff;border:1px solid var(--a-line);border-radius:10px}
+.a-accent{display:flex;overflow:hidden}
+.a-accent::before{content:"";flex:none;width:4px;background:var(--a-navy)}
+.a-accent>.in{flex:1;min-width:0;padding:16px;display:flex;flex-direction:column;gap:10px}
+.a-h1{font-size:20px;font-weight:800}
+.a-title{font-size:24px;font-weight:800;margin:2px 0 0}
+.a-desc{color:var(--a-sub);font-size:14px;line-height:20px;margin:0}
+.a-note{color:var(--a-sub);font-size:12px;line-height:17px}
+.a-err{color:var(--a-red);font-size:13px;font-weight:600}
+.a-row{display:flex;align-items:center;gap:8px}
+.a-grow{flex:1;min-width:0}
+
+.a-field{width:100%;height:52px;border:1px solid var(--a-field);border-radius:10px;background:#fff;padding:0 14px;font-size:16px;color:var(--a-text);outline:none}
+.a-field:focus{border-color:var(--a-blue);box-shadow:0 0 0 1px var(--a-blue)}
+.a-btn{height:52px;border:0;border-radius:10px;background:var(--a-navy);color:#fff;font-size:16px;font-weight:700;padding:0 16px}
+.a-btn:disabled{opacity:.5}
+.a-btn.full{width:100%}
+.a-btn.amber{background:var(--a-amber)} .a-btn.ok{background:var(--a-ok)} .a-btn.red{background:var(--a-short)}
+.a-obtn{height:34px;border:1px solid var(--a-line);border-radius:8px;background:#fff;color:var(--a-navy);font-size:13px;font-weight:600;padding:0 12px;white-space:nowrap}
+.a-obtn.big{height:46px;width:100%;font-size:15px}
+.a-tbtn{border:0;background:none;color:var(--a-sub);font-size:14px;font-weight:600;padding:8px 10px}
+.a-tbtn.blue{color:var(--a-blue)} .a-tbtn.red{color:var(--a-red)}
+
+/* 적재존 ⇄ 로케이션 스위치 */
+.a-switch{display:flex;height:36px;flex:1}
+.a-switch button{flex:1;border:1px solid var(--a-line);background:#fff;color:var(--a-sub);font-size:14px;font-weight:500}
+.a-switch button:first-child{border-radius:8px 0 0 8px}
+.a-switch button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.a-switch button.on{background:var(--a-navy);border-color:var(--a-navy);color:#fff;font-weight:700}
+.a-voice{flex:none;width:40px;height:40px;border-radius:8px;border:1px solid var(--a-line);background:var(--a-idle-soft);font-size:18px;padding:0}
+.a-voice.on{background:var(--a-blue-soft);border-color:rgba(53,117,197,.35)}
+
+/* 지금 세는 자리 */
+.a-scope{padding:6px 8px 8px 12px;gap:4px}
+.a-scope .lbl{font-size:11px;line-height:13px;font-weight:600;color:var(--a-sub);white-space:pre-line}
+.a-scope .pos{flex:1;min-width:0;font-size:24px;font-weight:800;color:var(--a-navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 위치 아래 작은 줄에 작업자 — 위치 글자가 잘리지 않게 (세는 중에도 누구 이름으로 기록되는지) */
+.a-scope .pos-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
+.a-scope .pos-wrap .pos{flex:none}
+.a-scope .wk{font-size:11px;line-height:13px;color:var(--a-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a-scope .wk b{color:var(--a-text);font-weight:700}
+
+/* 위치다름 카드 — 등록 로케이션·빼기 버튼을 왼쪽 파란 상자에 */
+.x-info{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--a-blue-soft);border-radius:8px;padding:8px 10px;margin-right:8px}
+.x-l{font-size:12px;font-weight:700;color:var(--a-blue)}
+.x-loc{font-size:12px;color:var(--a-sub)} .x-loc b{color:var(--a-text);font-size:13px;white-space:nowrap}
+.x-btn{margin-top:6px;height:32px;padding:0 12px;border:1px solid rgba(220,83,83,.5);border-radius:8px;background:#fff;color:var(--a-red);font-size:13px;font-weight:700}
+
+/* 확인이 필요한 스캔 창 — 안내(버튼 뜻) · 카드 목록 · 큰 버튼 */
+.modal .mb .e-guide,.modal .mb .e-body{white-space:normal}
+.e-block{color:var(--a-red);font-weight:700;background:var(--a-short-soft);border-radius:8px;padding:8px 10px}
+.e-guide{background:var(--a-bg);border-radius:10px;padding:10px 12px;font-size:13px;line-height:20px;display:flex;flex-direction:column;gap:6px;color:var(--a-text)}
+.e-pill{display:inline-block;border-radius:6px;padding:0 8px;margin-right:6px;font-size:12px;font-weight:700;line-height:20px}
+.e-pill.here{border:1.5px solid var(--a-blue);color:var(--a-blue);background:#fff}
+.e-pill.ok{background:var(--a-navy);color:#fff;border:1.5px solid var(--a-navy)}
+.e-sub{font-size:12px;color:var(--a-sub)}
+.e-body{display:flex;flex-direction:column;gap:8px}
+.e-sum{font-size:13px;color:var(--a-sub)}
+.e-list{display:flex;flex-direction:column;gap:10px}
+.e-card{border:1px solid rgba(220,83,83,.35);border-radius:12px;padding:12px;background:#fff;display:flex;flex-direction:column;gap:3px}
+.e-card.ok{border-color:var(--a-line);background:var(--a-idle-soft)}
+.e-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.e-reason{background:var(--a-short-soft);color:var(--a-red);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
+.e-card.ok .e-reason{background:#fff;color:var(--a-sub)}
+.e-done{color:var(--a-ok);font-size:13px;font-weight:700}
+.e-code{font-size:18px;font-weight:800;color:var(--a-text);overflow-wrap:anywhere}
+.e-card.ok .e-code{color:var(--a-sub)}
+.e-name{font-size:13px;line-height:18px;color:var(--a-sub)}
+.e-where{display:flex;align-items:baseline;gap:6px;font-size:12px;color:var(--a-sub)}
+.e-where b{font-size:14px;color:var(--a-red)}
+.e-card.ok .e-where b{color:var(--a-sub)}
+.e-acts{display:flex;gap:8px;margin-top:8px}
+.e-btn{flex:1;height:42px;border-radius:10px;font-size:15px;font-weight:700}
+.e-btn.here{background:#fff;border:1.5px solid var(--a-blue);color:var(--a-blue)}
+.e-btn.ok{background:var(--a-navy);border:0;color:#fff}
+.e-btn.undo{background:#fff;border:1px solid var(--a-line);color:var(--a-sub);height:38px;font-size:14px}
+.a-prog{height:5px;border-radius:3px;background:var(--a-line);overflow:hidden}
+.a-prog>i{display:block;height:100%;background:var(--a-blue)}
+.a-sum{font-size:14px;font-weight:700}
+.a-sum .s{font-size:12px;font-weight:400;color:var(--a-sub)}
+.a-prev{font-size:12px;font-weight:600;color:var(--a-amber)}
+.busybar{height:4px;border-radius:2px;background:var(--a-line);overflow:hidden;position:relative}
+.busybar::after{content:"";position:absolute;top:0;bottom:0;width:35%;background:var(--a-blue);animation:busy 1s linear infinite}
+@keyframes busy{from{left:-35%}to{left:100%}}
+
+/* 실사 카메라 (스캔 탭보다 낮게) */
+#auditTab .cam{height:170px;border-radius:10px}
+#auditTab .cam .scanline{background:var(--a-blue);box-shadow:none;left:9%;right:9%}
+#auditTab .cam .overlay button{background:var(--a-navy)}
+.cam .chips{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
+.cam .chips button{background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600}
+#auditTab .cam .torch{display:none}
+
+/* 입력 */
+form.a-input{display:flex;align-items:center;border:1px solid var(--a-field);border-radius:10px;background:#fff;padding:0 6px 0 14px}
+form.a-input:focus-within{border-color:var(--a-blue);box-shadow:0 0 0 1px var(--a-blue)}
+form.a-input input{flex:1;min-width:0;height:54px;border:0;background:transparent;font-size:16px;color:var(--a-text);outline:none}
+form.a-input button{height:40px;border:0;border-radius:8px;background:var(--a-navy);color:#fff;font-size:15px;font-weight:700;padding:0 16px}
+form.a-input button:disabled{opacity:.5}
+
+/* 카드 */
+.a-list{display:flex;flex-direction:column;gap:8px}
+.a-box{background:#fff;border:1px solid var(--a-line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;scroll-margin:70px 0 190px}
+.a-box.done{background:#F7FCF9}
+/* 재고 0 묶음 머리 — 재고 있는 카드와 나눔 */
+.a-zero-head{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border:1px dashed #CBD5E1;border-radius:10px;background:var(--a-idle-soft);color:var(--a-sub);font:inherit;cursor:pointer;text-align:left;width:100%}
+.a-zero-head .ttl{font-size:14px;font-weight:800;color:var(--a-text)}
+.a-zero-head .n{font-size:13px;font-weight:700;color:var(--a-idle)}
+.a-zero-head .tg{font-size:13px;font-weight:700;color:var(--a-blue)}
+.a-box .place{font-size:19px;font-weight:800;color:var(--a-blue)}
+.a-box .code{font-size:23px;font-weight:800;color:var(--a-text);overflow-wrap:anywhere}
+.a-box .qty{font-size:28px;font-weight:800}
+.a-box .qty small{font-size:15px;font-weight:700;color:var(--a-sub);margin-left:2px}
+.a-box .meta{font-size:13px;line-height:18px;color:var(--a-sub);overflow-wrap:anywhere}
+.a-box .meta.mono{font-weight:600}
+.a-box .meta:not(.mono){color:#4A5568}
+.a-box .meta.opt{color:var(--a-sub)}
+.a-box hr{border:0;border-top:1px solid var(--a-line);margin:6px 0 4px;width:100%}
+.a-box .exp-l{font-size:11px;color:var(--a-sub)}
+.a-box .exp{font-size:22px;font-weight:800}
+.a-box .exp small{font-size:11px;font-weight:400;color:var(--a-sub);margin-left:6px}
+.a-box .extra-l{font-size:12px;color:var(--a-blue)}
+.badge{display:inline-block;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:700;border:1px solid;white-space:nowrap}
+.step{flex:none;width:46px;height:46px;border:1px solid var(--a-field);border-radius:8px;background:#fff;color:var(--a-navy);font-size:22px;font-weight:700;padding:0}
+.cnt{flex:none;width:64px;height:46px;margin:0 6px;border-radius:8px;background:#fff;border:1.5px solid var(--a-field);font-size:24px;font-weight:800;padding:0}
+.cnt.empty{font-size:14px;color:var(--a-idle)}
+
+/* 오류 카드 */
+.a-errs{background:var(--a-short-soft);border:1px solid rgba(220,83,83,.3);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.a-errs .t{color:var(--a-red);font-weight:700}
+.a-errs .e{display:flex;align-items:center;background:#fff;border:1px solid rgba(220,83,83,.22);border-radius:8px;padding:6px 0 6px 10px}
+.a-errs .e .h{font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.a-errs .e .n{font-size:12px}
+.a-errs .e .w{font-size:12px;color:var(--a-red)}
+
+.a-errs .e.ok{background:var(--a-idle-soft);border-color:var(--a-line)}
+.a-errs .e.ok .h,.a-errs .e.ok .n,.a-errs .e.ok .w{color:var(--a-sub)}
+.a-tbtn.ok{color:#fff;background:var(--a-navy);border-radius:8px;margin-right:8px;padding:8px 12px}
+.modal .a-errs{background:none;border:0;padding:0}
+
+/* 확인 필요 칩 — 위치 상자 숫자 줄 오른쪽 */
+.a-chip{flex:none;border:1px solid rgba(220,83,83,.4);background:var(--a-short-soft);color:var(--a-red);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:800;white-space:nowrap}
+.a-chip.done{border-color:var(--a-line);background:var(--a-idle-soft);color:var(--a-sub);font-weight:600}
+.a-chip.bump{animation:bump .5s ease-out}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* 저장목록 */
+.a-saved{background:#fff;border:1px solid var(--a-line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.a-saved .sc{flex:1;font-size:18px;font-weight:800;color:var(--a-blue)}
+.a-saved .tm{font-size:12px;color:var(--a-sub)}
+.a-saved .ln{font-size:13px}
+.a-saved .d{display:flex;font-size:13px;gap:6px}
+.a-saved .d b:first-child{width:60px;flex:none}
+
+/* 맨 아래 고정: 저장·확정 버튼 + 방금 찍은 결과 띠 */
+#aBottom{position:fixed;left:0;right:0;bottom:0;z-index:8}
+#aBottom .act{background:#fff;box-shadow:0 -4px 12px rgba(0,0,0,.08);padding:8px 16px}
+#aBottom .act .a-btn{width:100%;max-width:528px;display:block;margin:0 auto}
+#aBottom .act.last{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.strip{color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -3px 10px rgba(0,0,0,.12)}
+.strip .wrap{max-width:528px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.strip .mk{font-size:20px;font-weight:800}
+.strip .place{font-size:17px;font-weight:800;opacity:.92}
+.strip .code{font-size:22px;line-height:26px;font-weight:800;overflow-wrap:anywhere}
+.strip .txt{font-size:13px;line-height:19px;font-weight:500;opacity:.88}
+.strip .txt.only{font-size:16px;font-weight:700;opacity:1}
+.strip .q{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.strip .q .n{font-size:28px;font-weight:800}
+.strip .q .tag{background:#fff;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:800}
+.strip .q .edit{font-size:11px;font-weight:600;opacity:.85}
+.strip .eb{display:flex;flex-direction:column;gap:6px}
+.strip .eb button{width:96px;height:40px;border-radius:8px;font-size:14px;font-weight:700}
+.strip .eb .w{background:#fff;border:0}
+.strip .eb .o{background:none;border:1px solid rgba(255,255,255,.85);color:#fff}
+
+/* 창 */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:#fff;border-radius:16px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;padding:20px;display:flex;flex-direction:column;gap:10px;color:var(--a-text)}
+.modal .mt{font-size:19px;font-weight:700}
+.modal .mb{font-size:14px;line-height:20px;display:flex;flex-direction:column;gap:6px;white-space:pre-line}
+.modal .mf{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.modal .mf .a-btn{height:44px;padding:0 20px;font-size:15px}
+.modal .opt{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;border:0;background:none;width:100%;text-align:left;font-size:15px;color:var(--a-text)}
+.modal .opt.on{background:var(--a-navy-soft);font-weight:700}
+.modal .opt .sub{display:block;font-size:11px;font-weight:400;color:var(--a-sub)}
+.modal .rates{display:flex;gap:6px}
+.modal .rates button{flex:1;border:1px solid var(--a-line);border-radius:8px;background:#fff;padding:8px 0;font-size:12px;font-weight:600;color:var(--a-text)}
+.modal .rates button.on{background:var(--a-navy);border-color:var(--a-navy);color:#fff}
+.modal .qtyin{height:56px;font-size:24px;font-weight:800}
+
+/* ══ 실사 화면 스타일 A / B (2026-11-26) — 화면만 다르고 데이터·동작은 같다. 상단 메뉴 '실사 화면 스타일'에서 고름 ══ */
+.menu-sep{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
+.menu-d .tile{background:var(--a-navy-soft);color:var(--a-navy)}
+.menu-d.on{background:var(--a-navy-soft)}
+.menu-d.on .tile{background:var(--a-navy);color:#fff}
+.menu-d.on .txt b{color:var(--a-navy)}
+#auditTab,#auditTab *{min-width:0}
+#auditTab{overflow-x:clip}   /* hidden 이면 B 요약의 sticky 가 안 붙는다 */
+form.a-input{scroll-margin:80px 0 200px}
+.a-empty{background:#fff;border:1px dashed var(--a-field);border-radius:10px;padding:18px;text-align:center;color:var(--a-sub);font-size:14px}
+
+/* ── 스타일 A: 카드형 + 필터 — 작업 정보 카드에 숫자 셋 · 진행률, 목록 위 필터 ── */
+.design-mode-a .a-switch{height:42px}
+.design-mode-a .a-switch button{font-size:15px}
+.wk-a{padding:12px 12px 12px 14px;gap:10px}
+.wk-a .pos-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
+.wk-a .lbl{white-space:nowrap}
+.wk-a .pos{font-size:26px;line-height:32px}
+.a-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.a-stats>div{background:var(--a-bg);border-radius:8px;padding:8px 6px;text-align:center;display:flex;flex-direction:column}
+.a-stats b{font-size:22px;line-height:26px;font-weight:800;color:var(--a-text)}
+.a-stats b.ok{color:var(--a-ok)} .a-stats b.left{color:var(--a-navy)}
+.a-stats small{font-size:12px;color:var(--a-sub)}
+.a-pct{font-size:15px;font-weight:800;color:var(--a-blue);min-width:40px;text-align:right}
+.design-mode-a .a-prog{height:8px;border-radius:4px}
+.a-sum2{gap:8px;font-size:13px;flex-wrap:wrap}
+.a-sum2 .s{color:var(--a-sub);font-size:12px}
+.design-mode-a #auditTab .cam{height:190px}
+.design-mode-a form.a-input input{height:56px}
+.design-mode-a form.a-input button{height:44px;padding:0 20px}
+.a-filter{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.a-filter::-webkit-scrollbar{display:none}
+.a-filter button{flex:1 0 auto;height:38px;border:1px solid var(--a-line);border-radius:999px;background:#fff;color:var(--a-sub);font-size:14px;font-weight:600;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.a-filter button b{font-size:13px;font-weight:800;color:var(--a-text);background:var(--a-idle-soft);border-radius:999px;padding:1px 8px}
+.a-filter button.on{background:var(--a-navy);border-color:var(--a-navy);color:#fff}
+.a-filter button.on b{background:rgba(255,255,255,.2);color:#fff}
+.design-mode-a .a-box{border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+
+/* ── 스타일 B: 짧은 요약(위에 붙음) + 간결한 목록 + 맨 아래 큰 버튼·맨 위로 ── */
+#aTop.b-stick{position:sticky;top:58px;z-index:4;margin:-16px -16px 0;padding:8px 16px 0;background:var(--a-bg)}
+.b-sum{background:var(--a-navy);color:#fff;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 14px rgba(36,74,120,.25)}
+.b-lbl{flex:none;font-size:11px;font-weight:700;opacity:.75}
+.b-pos{font-size:22px;line-height:28px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b-sum .a-voice{width:38px;height:38px;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
+.b-end{flex:none;height:38px;border:1px solid rgba(255,255,255,.6);border-radius:8px;background:none;color:#fff;font-size:14px;font-weight:700;padding:0 14px}
+.b-meta{gap:10px;font-size:13px;flex-wrap:wrap;row-gap:4px}
+.b-meta>span{white-space:nowrap;opacity:.9}
+.b-meta b{font-weight:800;opacity:1}
+.b-meta b.ok{color:#8FE0B4} .b-meta b.left{color:#fff}
+.b-sum .a-prog{height:4px;background:rgba(255,255,255,.22)}
+.b-sum .a-prog>i{background:#8FE0B4}
+.b-sum .a-prev{color:#FFD59A}
+.b-sum .a-chip{background:#fff}
+.b-sum .a-chip.done{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)}
+.design-mode-b #auditTab .cam{height:150px;border-radius:12px}
+.design-mode-b .a-switch{height:34px}
+.design-mode-b .a-switch button{font-size:13px}
+.b-list{background:#fff;border:1px solid var(--a-line);border-radius:12px;gap:0;overflow:hidden}
+.b-row{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--a-line);position:relative;background:#fff;scroll-margin:150px 0 190px}
+.b-row:last-child{border-bottom:0}
+.b-row::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--st)}
+.b-row.last{background:color-mix(in srgb, var(--st) 8%, #fff)}
+.b-row.done{background:#F7FCF9}
+.b-row[data-act]{cursor:pointer}
+.b-row[data-act]:active{background:var(--a-navy-soft)}
+.b-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.b-code{font-size:19px;line-height:24px;font-weight:800;color:var(--a-text);overflow-wrap:anywhere}
+.b-name{font-size:13px;line-height:17px;color:var(--a-text);overflow-wrap:anywhere}
+.b-opt{font-size:13px;line-height:17px;color:var(--a-sub);overflow-wrap:anywhere}   /* 옵션은 상품명 아래 줄 — 자르지 않고 줄바꿈 */
+.b-sub{font-size:12px;line-height:16px;color:var(--a-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b-sub b{color:var(--a-text)}
+.b-right{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.b-right .badge{font-size:12px;padding:2px 7px}
+.b-qty{font-size:24px;line-height:26px;font-weight:800;color:var(--a-text);white-space:nowrap}
+.b-qty small{font-size:13px;font-weight:700;color:var(--a-sub);margin-left:3px}
+.b-x{height:28px;padding:0 10px;border:1px solid rgba(220,83,83,.5);border-radius:7px;background:#fff;color:var(--a-red);font-size:12px;font-weight:700}
+.b-list .a-zero-head{margin:0;border:0;border-bottom:1px solid var(--a-line);border-top:1px solid var(--a-line);border-radius:0;padding:9px 14px}
+.b-list .a-zero-head:first-child{border-top:0}
+#aToTop{position:fixed;right:16px;z-index:9;width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:var(--a-navy);font-size:22px;font-weight:800;box-shadow:0 4px 14px rgba(15,23,42,.22)}
+.design-mode-b #aBottom .act .a-btn{height:56px;border-radius:14px;font-size:17px;box-shadow:0 6px 16px rgba(36,74,120,.28)}
+.design-mode-b #aBottom .act{background:linear-gradient(to top,var(--a-bg) 70%,rgba(244,246,249,0));box-shadow:none;padding-top:14px}
+
+/* PC 화면 — 가운데 정렬 폭은 main 이 잡는다. 아주 좁은 폰(360 미만)은 숫자만 조금 줄인다 */
+@media (max-width:370px){
+  .a-stats b{font-size:19px}
+  .b-code{font-size:17px}
+  .wk-a .pos{font-size:23px}
+  .b-pos{font-size:19px}
+}
+
+/* 색 나눔 (2026-11-26) — 바코드 = 진한 검정 · 로케이션 = 파랑 · 재고 숫자 = 보라 · 상품명은 한 단계 연하게 */
+.c-loc{color:var(--a-blue)!important;font-weight:800}
+.c-stk{color:var(--a-stock)!important;font-weight:800}
+.c-stk small{color:inherit!important;opacity:.85}
+.exp.c-stk small{color:var(--a-sub)!important;opacity:1}
+.b-code,.a-box .code{color:#111827}
+.b-name{color:#4A5568}
+.x-loc b{color:var(--a-blue)}
+/* 적재존 B 한 줄 — 바코드를 크게 (박스 바코드를 보고 찾는 일이라) */
+.b-code.big{font-size:24px;line-height:29px}
+@media (max-width:370px){.b-code.big{font-size:22px;line-height:27px}}
